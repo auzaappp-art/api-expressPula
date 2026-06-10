@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="id" class="light-style layout-menu-fixed" dir="ltr" data-theme="theme-default" data-assets-path="/assets/" data-template="vertical-menu-template-free">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+    <title>Dashboard Backup | Sneat</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+
+    <!-- Sneat assets (lokal dari public/assets) -->
+    <link rel="stylesheet" href="/assets/vendor/fonts/boxicons.css" />
+    <link rel="stylesheet" href="/assets/vendor/css/core.css" />
+    <link rel="stylesheet" href="/assets/vendor/css/theme-default.css" />
+    <link rel="stylesheet" href="/assets/css/demo.css" />
+    <link rel="stylesheet" href="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+    <style>
+        /* Live dot animasi */
+        .live-dot { animation: blink 1.5s infinite; }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.25} }
+
+        /* Highlight baris baru */
+        .row-baru {
+            animation: fadeIn 0.6s ease;
+            background-color: rgba(105,108,255,0.07) !important;
+        }
+        @keyframes fadeIn {
+            from { opacity:0; transform:translateY(-6px); }
+            to   { opacity:1; transform:translateY(0); }
+        }
+
+        /* Modal detail - tabel transaksi */
+        .tabel-detail th {
+            background: #f8f7fa;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .badge-plus  { background: rgba(113,221,55,0.15); color: #71dd37; }
+        .badge-minus { background: rgba(255,62,29,0.12);  color: #ff3e1d; }
+
+        /* Angka nominal */
+        .nominal-plus  { color: #71dd37; font-weight: 600; }
+        .nominal-minus { color: #ff3e1d; font-weight: 600; }
+    </style>
+</head>
+
+<body>
+<div class="layout-wrapper layout-content-navbar">
+  <div class="layout-container">
+
+    <!-- ======= SIDEBAR ======= -->
+    <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
+      <div class="app-brand demo">
+        <a href="/" class="app-brand-link">
+          <span class="app-brand-logo demo">
+            <svg width="25" viewBox="0 0 25 42" xmlns="http://www.w3.org/2000/svg">
+              <defs><style>.c1{fill:#696cff}.c2{fill:#696cff;opacity:.5}</style></defs>
+              <polygon class="c1" points="12.5 0 25 7.5 25 22.5 12.5 30 0 22.5 0 7.5"/>
+              <polygon class="c2" points="12.5 30 25 22.5 25 37.5 12.5 45 0 37.5 0 22.5"/>
+            </svg>
+          </span>
+          <span class="app-brand-text demo menu-text fw-bolder ms-2">BackupApp</span>
+        </a>
+        <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-auto ms-auto d-block d-xl-none">
+          <i class="bx bx-chevron-left bx-sm align-middle"></i>
+        </a>
+      </div>
+      <div class="menu-inner-shadow"></div>
+      <ul class="menu-inner py-1">
+        <li class="menu-item active">
+          <a href="/" class="menu-link">
+            <i class="menu-icon tf-icons bx bx-home-circle"></i>
+            <div><i class="fa fa-database me-1"></i>Backup Data</div>
+          </a>
+        </li>
+      </ul>
+    </aside>
+    <!-- ======= / SIDEBAR ======= -->
+
+    <div class="layout-page">
+
+      <!-- ======= NAVBAR ======= -->
+      <nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme" id="layout-navbar">
+        <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none">
+          <a class="nav-item nav-link px-0 me-xl-4" href="javascript:void(0)">
+            <i class="bx bx-menu bx-sm"></i>
+          </a>
+        </div>
+        <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
+          <span class="fw-semibold text-muted">
+            <i class="bx bx-sync me-1"></i> Sistem Backup Database
+          </span>
+          <ul class="navbar-nav flex-row align-items-center ms-auto gap-3">
+            <li class="nav-item">
+              <span id="badge-live" class="badge bg-label-success">
+                <span class="live-dot">●</span> Live
+              </span>
+            </li>
+            <li class="nav-item">
+              <small class="text-muted" id="last-update">Memuat...</small>
+            </li>
+          </ul>
+        </div>
+      </nav>
+      <!-- ======= / NAVBAR ======= -->
+
+      <div class="content-wrapper">
+        <div class="container-xxl flex-grow-1 container-p-y">
+
+          <h4 class="fw-bold py-3 mb-4">
+            <span class="text-muted fw-light">Sistem /</span> Dashboard Backup
+          </h4>
+
+          <!-- ======= KARTU STATISTIK ======= -->
+          <div class="row mb-4">
+            <!-- Total Backup -->
+            <div class="col-lg-4 col-md-12 col-6 mb-4">
+              <div class="card">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between flex-sm-row flex-column gap-3">
+                    <div class="d-flex flex-sm-column flex-row align-items-start justify-content-between">
+                      <div class="card-title">
+                        <h5 class="text-nowrap mb-2">Total Backup</h5>
+                        <span class="badge bg-label-warning rounded-pill">Semua</span>
+                      </div>
+                      <div class="mt-sm-auto">
+                        <small class="text-success fw-semibold"><i class="bx bx-up-arrow-alt"></i> Data tersimpan</small>
+                        <h3 class="mb-0" id="stat-total"><%= data.length %></h3>
+                      </div>
+                    </div>
+                    <img src="/assets/img/icons/unicons/chart-success.png" height="140" alt="Total" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Backup Terbaru -->
+            <div class="col-lg-4 col-md-12 col-6 mb-4">
+              <div class="card">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between flex-sm-row flex-column gap-3">
+                    <div class="d-flex flex-sm-column flex-row align-items-start justify-content-between">
+                      <div class="card-title">
+                        <h5 class="text-nowrap mb-2">Backup Terbaru</h5>
+                        <span class="badge bg-label-info rounded-pill">Terkini</span>
+                      </div>
+                      <div class="mt-sm-auto">
+                        <small class="text-muted fw-semibold">Nama backup</small>
+                        <h5 class="mb-0 text-truncate" style="max-width:150px;" id="stat-latest">
+                          <% if(data.length > 0){ %><%= data[0].nama %><% } else { %>-<% } %>
+                        </h5>
+                      </div>
+                    </div>
+                    <img src="/assets/img/icons/unicons/wallet-info.png" height="140" alt="Terbaru" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Channel -->
+            <div class="col-lg-4 col-md-12 col-6 mb-4">
+              <div class="card">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between flex-sm-row flex-column gap-3">
+                    <div class="d-flex flex-sm-column flex-row align-items-start justify-content-between">
+                      <div class="card-title">
+                        <h5 class="text-nowrap mb-2">Channel</h5>
+                        <span class="badge bg-label-primary rounded-pill">Aktif</span>
+                      </div>
+                      <div class="mt-sm-auto">
+                        <small class="text-muted fw-semibold">Platform</small>
+                        <h3 class="mb-0" id="stat-channel">
+                          <% if(data.length > 0){ %><%= data[0].channel %><% } else { %>-<% } %>
+                        </h3>
+                      </div>
+                    </div>
+                    <img src="/assets/img/icons/unicons/cc-primary.png" height="140" alt="Channel" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- ======= / KARTU STATISTIK ======= -->
+
+          <!-- ======= TABEL BACKUP ======= -->
+          <div class="card">
+            <div class="card-header d-flex align-items-center justify-content-between">
+              <h5 class="mb-0">
+                <i class="bx bx-table me-1 text-primary"></i> Daftar Backup
+              </h5>
+              <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-label-primary" id="row-count"><%= data.length %> Data</span>
+                <button class="btn btn-sm btn-outline-primary" onclick="refreshManual()">
+                  <i class="bx bx-refresh me-1"></i>Refresh
+                </button>
+              </div>
+            </div>
+            <div class="table-responsive text-nowrap">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>ID Backup</th>
+                    <th>Nama Backup</th>
+                    <th>Channel</th>
+                    <th>Waktu Backup</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody class="table-border-bottom-0" id="tabel-backup">
+                  <% if(data.length > 0){ %>
+                    <% data.forEach(function(row, i){ %>
+                    <tr>
+                      <td><strong><%= i+1 %></strong></td>
+                      <td><code><%= row.id %></code></td>
+                      <td>
+                        <div class="d-flex align-items-center gap-2">
+                          <div class="avatar avatar-sm">
+                            <span class="avatar-initial rounded-circle bg-label-primary">
+                              <%= (row.nama||'B')[0].toUpperCase() %>
+                            </span>
+                          </div>
+                          <strong><%= row.nama %></strong>
+                        </div>
+                      </td>
+                      <td>
+                        <span class="badge <%= row.channel === 'nodejs' ? 'bg-label-success' : 'bg-label-info' %>">
+                          <%= row.channel %>
+                        </span>
+                      </td>
+                      <td>
+                        <i class="bx bx-time-five me-1 text-muted"></i>
+                        <%= row.waktu ? new Date(row.waktu).toLocaleString('id-ID', {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '-' %>
+                      </td>
+                      <td><span class="badge bg-label-success">Berhasil</span></td>
+                      <td>
+                        <button class="btn btn-sm btn-primary" onclick="lihatDetail('<%= row.id %>', '<%= row.nama %>')">
+                          <i class="bx bx-show me-1"></i>Detail
+                        </button>
+                      </td>
+                    </tr>
+                    <% }) %>
+                  <% } else { %>
+                    <tr id="empty-row">
+                      <td colspan="7" class="text-center py-4 text-muted">
+                        <i class="bx bx-data bx-lg d-block mb-2"></i>
+                        Belum ada data backup
+                      </td>
+                    </tr>
+                  <% } %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <!-- ======= / TABEL BACKUP ======= -->
+
+        </div>
+
+        <footer class="content-footer footer bg-footer-theme">
+          <div class="container-xxl d-flex flex-wrap justify-content-between py-2 flex-md-row flex-column">
+            <div>© 2025 <strong>BackupApp</strong> — NodeJS Express</div>
+            <div id="koneksi-status">
+              <i class="bx bx-circle text-success" style="font-size:0.6rem;"></i> Terhubung ke server
+            </div>
+          </div>
+        </footer>
+      </div>
+    </div>
+  </div>
+  <div class="layout-overlay layout-menu-toggle"></div>
+</div>
+
+<!-- ======= MODAL DETAIL TRANSAKSI ======= -->
+<div class="modal fade" id="modalDetail" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="bx bx-list-ul me-2 text-primary"></i>
+          Detail Transaksi — <span id="modal-nama-backup" class="text-primary"></span>
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+
+        <!-- Ringkasan -->
+        <div class="row mb-3" id="modal-ringkasan">
+          <div class="col-md-3">
+            <div class="card border-0 bg-label-primary text-center py-2">
+              <small class="text-muted">Total Transaksi</small>
+              <h4 class="mb-0 text-primary" id="modal-total-trx">0</h4>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card border-0 bg-label-success text-center py-2">
+              <small class="text-muted">Total Pemasukan</small>
+              <h6 class="mb-0 text-success" id="modal-total-plus">Rp 0</h6>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card border-0 bg-label-danger text-center py-2">
+              <small class="text-muted">Total Pengeluaran</small>
+              <h6 class="mb-0 text-danger" id="modal-total-minus">Rp 0</h6>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card border-0 bg-label-warning text-center py-2">
+              <small class="text-muted">Saldo Bersih</small>
+              <h6 class="mb-0" id="modal-saldo">Rp 0</h6>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabel detail -->
+        <div class="table-responsive">
+          <table class="table table-hover tabel-detail">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Tanggal & Jam</th>
+                <th>Uraian</th>
+                <th>Jenis</th>
+                <th class="text-end">Nominal</th>
+              </tr>
+            </thead>
+            <tbody id="modal-tbody">
+              <tr><td colspan="5" class="text-center py-3">Memuat data...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+          <i class="bx bx-x me-1"></i>Tutup
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ======= / MODAL ======= -->
+
+
+<!-- Scripts Sneat (lokal) -->
+<script src="/assets/vendor/libs/jquery/jquery.js"></script>
+<script src="/assets/vendor/libs/popper/popper.js"></script>
+<script src="/assets/vendor/js/bootstrap.js"></script>
+<script src="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+<script src="/assets/vendor/js/menu.js"></script>
+<script src="/assets/js/main.js"></script>
+
+<script>
+// ============================================
+// FUNGSI HELPER
+// ============================================
+let jumlahSebelumnya = <%= data.length %>;
+
+function formatTgl(tgl) {
+    if (!tgl) return '-';
+    return new Date(tgl).toLocaleString('id-ID', {
+        day: '2-digit', month: 'short', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+    });
+}
+
+function formatRupiah(angka) {
+    return 'Rp ' + parseInt(angka || 0).toLocaleString('id-ID');
+}
+
+// ============================================
+// RENDER TABEL UTAMA
+// ============================================
+function renderTabel(arr) {
+    const tbody = document.getElementById('tabel-backup');
+    if (!arr || arr.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">
+            <i class="bx bx-data bx-lg d-block mb-2"></i>Belum ada data backup</td></tr>`;
+        return;
+    }
+    tbody.innerHTML = arr.map((row, i) => {
+        const isNew = i === 0 && arr.length > jumlahSebelumnya;
+        const inisial = (row.nama || 'B')[0].toUpperCase();
+        const channelBadge = row.channel === 'nodejs' ? 'bg-label-success' : 'bg-label-info';
+        const waktu = row.waktu ? formatTgl(row.waktu) : '-';
+        return `
+        <tr class="${isNew ? 'row-baru' : ''}">
+            <td><strong>${i + 1}</strong></td>
+            <td><code>${row.id}</code></td>
+            <td>
+                <div class="d-flex align-items-center gap-2">
+                    <div class="avatar avatar-sm">
+                        <span class="avatar-initial rounded-circle bg-label-primary">${inisial}</span>
+                    </div>
+                    <strong>${row.nama || '-'}</strong>
+                </div>
+            </td>
+            <td><span class="badge ${channelBadge}">${row.channel}</span></td>
+            <td><i class="bx bx-time-five me-1 text-muted"></i>${waktu}</td>
+            <td><span class="badge bg-label-success">Berhasil</span></td>
+            <td>
+                <button class="btn btn-sm btn-primary" onclick="lihatDetail('${row.id}', '${row.nama}')">
+                    <i class="bx bx-show me-1"></i>Detail
+                </button>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+// ============================================
+// UPDATE STATISTIK
+// ============================================
+function updateStats(arr) {
+    document.getElementById('stat-total').textContent  = arr.length;
+    document.getElementById('row-count').textContent   = arr.length + ' Data';
+    if (arr.length > 0) {
+        document.getElementById('stat-latest').textContent  = arr[0].nama || '-';
+        document.getElementById('stat-channel').textContent = arr[0].channel || '-';
+    }
+    document.getElementById('last-update').textContent = 'Update: ' + new Date().toLocaleTimeString('id-ID');
+}
+
+// ============================================
+// REFRESH MANUAL
+// ============================================
+function refreshManual() {
+    fetch('/api/backup').then(r => r.json()).then(data => {
+        renderTabel(data);
+        updateStats(data);
+        jumlahSebelumnya = data.length;
+    });
+}
+
+// ============================================
+// LIHAT DETAIL TRANSAKSI (MODAL)
+// ============================================
+function lihatDetail(idBackup, namaBackup) {
+    // Set judul modal
+    document.getElementById('modal-nama-backup').textContent = namaBackup;
+
+    // Kosongkan tabel dulu
+    document.getElementById('modal-tbody').innerHTML =
+        '<tr><td colspan="5" class="text-center py-3"><i class="bx bx-loader-alt bx-spin me-2"></i>Memuat data...</td></tr>';
+
+    // Reset ringkasan
+    document.getElementById('modal-total-trx').textContent  = '0';
+    document.getElementById('modal-total-plus').textContent = 'Rp 0';
+    document.getElementById('modal-total-minus').textContent = 'Rp 0';
+    document.getElementById('modal-saldo').textContent      = 'Rp 0';
+
+    // Tampilkan modal
+    const modal = new bootstrap.Modal(document.getElementById('modalDetail'));
+    modal.show();
+
+    // Fetch data detail
+    fetch(`/api/detail/${idBackup}`)
+        .then(r => r.json())
+        .then(detail => {
+            if (!detail || detail.length === 0) {
+                document.getElementById('modal-tbody').innerHTML =
+                    '<tr><td colspan="5" class="text-center py-4 text-muted">Tidak ada data transaksi</td></tr>';
+                return;
+            }
+
+            let totalPlus = 0, totalMinus = 0;
+
+            document.getElementById('modal-tbody').innerHTML = detail.map((d, i) => {
+                const nominal   = parseInt(d.nominal || 0);
+                const isPlus    = d.jenis === '+';
+                isPlus ? totalPlus += nominal : totalMinus += nominal;
+
+                const badgeClass   = isPlus ? 'badge-plus' : 'badge-minus';
+                const nominalClass = isPlus ? 'nominal-plus' : 'nominal-minus';
+                const icon         = isPlus ? 'bx-up-arrow-alt text-success' : 'bx-down-arrow-alt text-danger';
+
+                return `
+                <tr>
+                    <td>${i + 1}</td>
+                    <td><i class="bx bx-calendar me-1 text-muted"></i>${formatTgl(d.tgl_jam)}</td>
+                    <td>${d.uraian || '-'}</td>
+                    <td>
+                        <span class="badge badge-sneat ${badgeClass} rounded-pill px-2">
+                            <i class="bx ${icon}"></i> ${d.jenis === '+' ? 'Masuk' : 'Keluar'}
+                        </span>
+                    </td>
+                    <td class="text-end ${nominalClass}">${formatRupiah(nominal)}</td>
+                </tr>`;
+            }).join('');
+
+            // Update ringkasan
+            const saldo = totalPlus - totalMinus;
+            document.getElementById('modal-total-trx').textContent   = detail.length;
+            document.getElementById('modal-total-plus').textContent  = formatRupiah(totalPlus);
+            document.getElementById('modal-total-minus').textContent = formatRupiah(totalMinus);
+            document.getElementById('modal-saldo').textContent       = formatRupiah(saldo);
+            document.getElementById('modal-saldo').className =
+                'mb-0 fw-bold ' + (saldo >= 0 ? 'text-success' : 'text-danger');
+        })
+        .catch(() => {
+            document.getElementById('modal-tbody').innerHTML =
+                '<tr><td colspan="5" class="text-center text-danger">Gagal memuat data</td></tr>';
+        });
+}
+
+// ============================================
+// SSE - REACTIVE REAL TIME
+// ============================================
+function mulaiSSE() {
+    const sse = new EventSource('/stream');
+
+    sse.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+
+        if (data.length !== jumlahSebelumnya) {
+            renderTabel(data);
+        }
+        updateStats(data);
+
+        // Notifikasi jika ada data baru
+        if (data.length > jumlahSebelumnya) {
+            const badge = document.getElementById('badge-live');
+            badge.className = 'badge bg-primary';
+            badge.innerHTML = '🔔 Backup Baru!';
+            setTimeout(() => {
+                badge.className = 'badge bg-label-success';
+                badge.innerHTML = '<span class="live-dot">●</span> Live';
+            }, 4000);
+        }
+
+        jumlahSebelumnya = data.length;
+    };
+
+    sse.onerror = function() {
+        document.getElementById('badge-live').className = 'badge bg-danger';
+        document.getElementById('badge-live').textContent = '● Terputus';
+        document.getElementById('koneksi-status').innerHTML =
+            '<i class="bx bx-circle text-danger" style="font-size:0.6rem;"></i> Koneksi terputus';
+    };
+
+    sse.onopen = function() {
+        document.getElementById('koneksi-status').innerHTML =
+            '<i class="bx bx-circle text-success" style="font-size:0.6rem;"></i> Terhubung ke server';
+    };
+}
+
+window.onload = function() {
+    mulaiSSE();
+    document.getElementById('last-update').textContent = 'Update: ' + new Date().toLocaleTimeString('id-ID');
+};
+</script>
+
+</body>
+</html>
